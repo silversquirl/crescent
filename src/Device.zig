@@ -10,6 +10,7 @@ const Device = @This();
 manager: helper.Manager(Device) = .{},
 dispatch: vk.DeviceDispatch,
 device: vk.Device,
+queue: internal.Queue,
 adapter: *internal.Adapter,
 
 pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor) !Device {
@@ -51,13 +52,15 @@ pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor
     }, null);
     // If the DeviceDispatch fails to load, we can't destroy the device
     errdefer std.log.warn("leaked vulkan device due to error", .{});
+    const dispatch = try vk.DeviceDispatch.load(
+        device,
+        adapter.instance.dispatch.dispatch.vkGetDeviceProcAddr,
+    );
 
     return .{
-        .dispatch = try vk.DeviceDispatch.load(
-            device,
-            adapter.instance.dispatch.dispatch.vkGetDeviceProcAddr,
-        ),
+        .dispatch = dispatch,
         .device = device,
+        .queue = internal.Queue.init(dispatch, device, adapter.info),
         .adapter = adapter,
     };
 }
@@ -97,4 +100,8 @@ pub fn createPipelineLayout(self: *Device, descriptor: *const gpu.PipelineLayout
     errdefer self.allocator().destroy(layout);
     layout.* = try internal.PipelineLayout.init(self, descriptor);
     return layout;
+}
+
+pub fn getQueue(self: *Device) *internal.Queue {
+    return &self.queue;
 }

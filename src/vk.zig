@@ -35,6 +35,8 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
     .destroyPipeline = true,
     .createPipelineLayout = true,
     .destroyPipelineLayout = true,
+
+    .getDeviceQueue = true,
 });
 
 pub var bd: BaseDispatch = undefined;

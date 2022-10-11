@@ -11,7 +11,7 @@ manager: helper.Manager(Adapter) = .{},
 info: DeviceInfo,
 instance: *internal.Instance,
 
-const DeviceInfo = struct {
+pub const DeviceInfo = struct {
     phys_dev: vk.PhysicalDevice,
     props: vk.PhysicalDeviceProperties,
     graphics_family: u32,
