@@ -66,3 +66,18 @@ pub fn deinit(self: *Device) void {
     self.dispatch.destroyDevice(self.device, null);
     self.adapter.instance.allocator().destroy(self);
 }
+
+pub fn setUncapturedErrorCallback(self: *Device, callback: ?gpu.ErrorCallback, userdata: ?*anyopaque) void {
+    _ = self;
+    _ = callback;
+    _ = userdata;
+    std.log.warn("setUncapturedErrorCallback is not yet implemented", .{});
+}
+
+pub fn createShaderModule(self: *Device, descriptor: *const gpu.ShaderModule.Descriptor) !*internal.ShaderModule {
+    const allocator = self.adapter.instance.allocator();
+    const shader = try allocator.create(internal.ShaderModule);
+    errdefer allocator.destroy(shader);
+    shader.* = try internal.ShaderModule.init(self, descriptor);
+    return shader;
+}

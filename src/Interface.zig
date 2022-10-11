@@ -365,7 +365,12 @@ pub fn deviceCreateSampler(device: *gpu.Device, descriptor: ?*const gpu.Sampler.
 }
 
 pub inline fn deviceCreateShaderModule(device: *gpu.Device, descriptor: *const gpu.ShaderModule.Descriptor) *gpu.ShaderModule {
-    return @ptrCast(*gpu.ShaderModule, castOpaque(*internal.Device, device).createShaderModule(descriptor));
+    return @ptrCast(
+        *gpu.ShaderModule,
+        castOpaque(*internal.Device, device).createShaderModule(descriptor) catch |err| {
+            std.debug.panic("Error creating shader: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn deviceCreateSwapChain(device: *gpu.Device, surface: ?*gpu.Surface, descriptor: *const gpu.SwapChain.Descriptor) *gpu.SwapChain {

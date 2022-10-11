@@ -25,6 +25,9 @@ pub const InstanceDispatch = vk.InstanceWrapper(.{
 });
 pub const DeviceDispatch = vk.DeviceWrapper(.{
     .destroyDevice = true,
+
+    .createShaderModule = true,
+    .destroyShaderModule = true,
 });
 
 pub var bd: BaseDispatch = undefined;
