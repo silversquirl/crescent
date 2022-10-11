@@ -385,7 +385,15 @@ pub inline fn deviceCreateShaderModule(device: *gpu.Device, descriptor: *const g
 }
 
 pub inline fn deviceCreateSwapChain(device: *gpu.Device, surface: ?*gpu.Surface, descriptor: *const gpu.SwapChain.Descriptor) *gpu.SwapChain {
-    return @ptrCast(*gpu.SwapChain, castOpaque(*internal.Device, device).createSwapChain(castOpaque(*internal.Surface, surface), descriptor));
+    return @ptrCast(
+        *gpu.SwapChain,
+        castOpaque(*internal.Device, device).createSwapChain(
+            castOpaque(?*internal.Surface, surface),
+            descriptor,
+        ) catch |err| {
+            std.debug.panic("Error creating swapchain: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn deviceCreateTexture(device: *gpu.Device, descriptor: *const gpu.Texture.Descriptor) *gpu.Texture {

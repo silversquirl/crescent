@@ -74,6 +74,10 @@ pub inline fn allocator(self: *Device) std.mem.Allocator {
     return self.adapter.instance.allocator();
 }
 
+pub fn getQueue(self: *Device) *internal.Queue {
+    return &self.queue;
+}
+
 pub fn setUncapturedErrorCallback(self: *Device, callback: ?gpu.ErrorCallback, userdata: ?*anyopaque) void {
     _ = self;
     _ = callback;
@@ -102,6 +106,9 @@ pub fn createPipelineLayout(self: *Device, descriptor: *const gpu.PipelineLayout
     return layout;
 }
 
-pub fn getQueue(self: *Device) *internal.Queue {
-    return &self.queue;
+pub fn createSwapChain(self: *Device, surface: ?*internal.Surface, descriptor: *const gpu.SwapChain.Descriptor) !*internal.SwapChain {
+    const swapchain = try self.allocator().create(internal.SwapChain);
+    errdefer self.allocator().destroy(swapchain);
+    swapchain.* = try internal.SwapChain.init(self, surface.?, descriptor);
+    return swapchain;
 }
