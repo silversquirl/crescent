@@ -24,35 +24,35 @@ pub inline fn getProcAddress(device: *gpu.Device, proc_name: [*:0]const u8) ?gpu
     @panic("TODO: implement getProcAddress");
 }
 
-pub inline fn adapterCreateDevice(adapter: *gpu.internal.Adapter, descriptor: ?*const gpu.Device.Descriptor) ?*gpu.Device {
+pub inline fn adapterCreateDevice(adapter: *gpu.Adapter, descriptor: ?*const gpu.Device.Descriptor) ?*gpu.Device {
     return @ptrCast(?*gpu.Device, castOpaque(*internal.Adapter, adapter).createDevice(descriptor));
 }
 
-pub inline fn adapterEnumerateFeatures(adapter: *gpu.internal.Adapter, features: ?[*]gpu.FeatureName) usize {
+pub inline fn adapterEnumerateFeatures(adapter: *gpu.Adapter, features: ?[*]gpu.FeatureName) usize {
     return castOpaque(*internal.Adapter, adapter).enumerateFeatures(features);
 }
 
-pub inline fn adapterGetLimits(adapter: *gpu.internal.Adapter, limits: *gpu.SupportedLimits) bool {
+pub inline fn adapterGetLimits(adapter: *gpu.Adapter, limits: *gpu.SupportedLimits) bool {
     return castOpaque(*internal.Adapter, adapter).getLimits(limits);
 }
 
-pub inline fn adapterGetProperties(adapter: *gpu.internal.Adapter, properties: *gpu.internal.Adapter.Properties) void {
+pub inline fn adapterGetProperties(adapter: *gpu.Adapter, properties: *gpu.Adapter.Properties) void {
     return castOpaque(*internal.Adapter, adapter).getProperties(properties);
 }
 
-pub inline fn adapterHasFeature(adapter: *gpu.internal.Adapter, feature: gpu.FeatureName) bool {
+pub inline fn adapterHasFeature(adapter: *gpu.Adapter, feature: gpu.FeatureName) bool {
     return castOpaque(*internal.Adapter, adapter).hasFeature(feature);
 }
 
-pub inline fn adapterRequestDevice(adapter: *gpu.internal.Adapter, descriptor: ?*const gpu.Device.Descriptor, callback: gpu.RequestDeviceCallback, userdata: ?*anyopaque) void {
+pub inline fn adapterRequestDevice(adapter: *gpu.Adapter, descriptor: ?*const gpu.Device.Descriptor, callback: gpu.RequestDeviceCallback, userdata: ?*anyopaque) void {
     return castOpaque(*internal.Adapter, adapter).requestDevice(descriptor, callback, userdata);
 }
 
-pub inline fn adapterReference(adapter: *gpu.internal.Adapter) void {
+pub inline fn adapterReference(adapter: *gpu.Adapter) void {
     castOpaque(*internal.Adapter, adapter).manager.reference();
 }
 
-pub inline fn adapterRelease(adapter: *gpu.internal.Adapter) void {
+pub inline fn adapterRelease(adapter: *gpu.Adapter) void {
     castOpaque(*internal.Adapter, adapter).manager.release();
 }
 

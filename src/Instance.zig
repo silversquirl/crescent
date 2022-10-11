@@ -1,5 +1,4 @@
 const std = @import("std");
-const builtin = @import("builtin");
 const gpu = @import("gpu");
 
 const internal = @import("internal.zig");
@@ -17,9 +16,8 @@ instance: vk.Instance,
 pub fn create(descriptor: ?*const gpu.Instance.Descriptor) !*Instance {
     _ = descriptor;
 
-    const enable_validation = builtin.mode == .Debug;
     const khr_validation = "VK_LAYER_KHRONOS_validation";
-    const layers: []const [*:0]const u8 = if (enable_validation and vk.hasLayer(khr_validation))
+    const layers: []const [*:0]const u8 = if (vk.enable_validation and vk.hasLayer(khr_validation))
         &.{khr_validation}
     else
         &.{};
@@ -66,9 +64,28 @@ pub fn deinit(self: *Instance) void {
     _ = gpa.deinit();
 }
 
+pub inline fn allocator(self: *Instance) std.mem.Allocator {
+    return self.gpa.allocator();
+}
+
 pub fn createSurface(self: *Instance, descriptor: *const gpu.Surface.Descriptor) !*internal.Surface {
-    const surface = try self.gpa.allocator().create(internal.Surface);
-    errdefer self.gpa.allocator().destroy(surface);
-    try surface.init(self, descriptor);
+    const surface = try self.allocator().create(internal.Surface);
+    errdefer self.allocator().destroy(surface);
+    surface.* = try internal.Surface.init(self, descriptor);
     return surface;
+}
+
+pub fn requestAdapter(self: *Instance, options: ?*const gpu.RequestAdapterOptions, callback: gpu.RequestAdapterCallback, userdata: ?*anyopaque) void {
+    if (self.createAdapter(options)) |adapter| {
+        callback(.success, @ptrCast(*gpu.Adapter, adapter), null, userdata);
+    } else |err| switch (err) {
+        error.NoAdapterFound => callback(.unavailable, undefined, null, userdata),
+        else => |e| callback(.err, undefined, @errorName(e), userdata),
+    }
+}
+fn createAdapter(self: *Instance, options: ?*const gpu.RequestAdapterOptions) !*internal.Adapter {
+    const adapter = try self.allocator().create(internal.Adapter);
+    errdefer self.allocator().destroy(adapter);
+    adapter.* = try internal.Adapter.init(self, options orelse &gpu.RequestAdapterOptions{});
+    return adapter;
 }

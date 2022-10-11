@@ -17,6 +17,10 @@ pub const InstanceDispatch = vk.InstanceWrapper(.{
     .createXlibSurfaceKHR = windowing_system == .xlib,
     .createWin32SurfaceKHR = windowing_system == .win32,
     .destroySurfaceKHR = true,
+
+    .enumeratePhysicalDevices = true,
+    .getPhysicalDeviceProperties = true,
+    .getPhysicalDeviceQueueFamilyProperties = true,
 });
 
 pub var bd: BaseDispatch = undefined;
@@ -71,3 +75,5 @@ pub const windowing_system: WindowingSystem = switch (builtin.target.os.tag) {
     .macos => @compileError("TODO: macos"),
     else => .xlib,
 };
+
+pub const enable_validation = builtin.mode == .Debug;

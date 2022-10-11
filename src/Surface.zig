@@ -11,13 +11,13 @@ manager: helper.Manager(Surface) = .{},
 surface: vk.SurfaceKHR,
 instance: *internal.Instance,
 
-pub fn init(self: *Surface, instance: *internal.Instance, descriptor: *const gpu.Surface.Descriptor) !void {
+pub fn init(instance: *internal.Instance, descriptor: *const gpu.Surface.Descriptor) !Surface {
     const surface = switch (vk.windowing_system) {
         .win32 => @compileError("TODO"),
         .xlib => try initXlib(instance, descriptor),
     };
 
-    self.* = .{
+    return .{
         .surface = surface,
         .instance = instance,
     };
@@ -39,5 +39,5 @@ fn initXlib(instance: *internal.Instance, descriptor: *const gpu.Surface.Descrip
 
 pub fn deinit(self: *Surface) void {
     self.instance.dispatch.destroySurfaceKHR(self.instance.instance, self.surface, null);
-    self.instance.gpa.allocator().destroy(self);
+    self.instance.allocator().destroy(self);
 }
