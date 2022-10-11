@@ -11,6 +11,7 @@ pub const BaseDispatch = vk.BaseWrapper(.{
 });
 pub const InstanceDispatch = vk.InstanceWrapper(.{
     .destroyInstance = true,
+
     .createDevice = true,
     .getDeviceProcAddr = true,
 
@@ -21,6 +22,9 @@ pub const InstanceDispatch = vk.InstanceWrapper(.{
     .enumeratePhysicalDevices = true,
     .getPhysicalDeviceProperties = true,
     .getPhysicalDeviceQueueFamilyProperties = true,
+});
+pub const DeviceDispatch = vk.DeviceWrapper(.{
+    .destroyDevice = true,
 });
 
 pub var bd: BaseDispatch = undefined;

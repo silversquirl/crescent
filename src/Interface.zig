@@ -25,7 +25,10 @@ pub inline fn getProcAddress(device: *gpu.Device, proc_name: [*:0]const u8) ?gpu
 }
 
 pub inline fn adapterCreateDevice(adapter: *gpu.Adapter, descriptor: ?*const gpu.Device.Descriptor) ?*gpu.Device {
-    return @ptrCast(?*gpu.Device, castOpaque(*internal.Adapter, adapter).createDevice(descriptor));
+    return @ptrCast(
+        ?*gpu.Device,
+        castOpaque(*internal.Adapter, adapter).createDevice(descriptor) catch return null,
+    );
 }
 
 pub inline fn adapterEnumerateFeatures(adapter: *gpu.Adapter, features: ?[*]gpu.FeatureName) usize {

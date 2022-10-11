@@ -129,7 +129,7 @@ pub fn deinit(self: *Adapter) void {
     self.instance.allocator().destroy(self);
 }
 
-pub inline fn getProperties(self: *Adapter, properties: *gpu.Adapter.Properties) void {
+pub fn getProperties(self: *Adapter, properties: *gpu.Adapter.Properties) void {
     properties.* = .{
         .vendor_id = self.info.props.vendor_id,
         .vendor_name = "",
@@ -145,4 +145,11 @@ pub inline fn getProperties(self: *Adapter, properties: *gpu.Adapter.Properties)
         },
         .backend_type = .vulkan,
     };
+}
+
+pub fn createDevice(self: *Adapter, descriptor: ?*const gpu.Device.Descriptor) !*internal.Device {
+    const device = try self.instance.allocator().create(internal.Device);
+    errdefer self.instance.allocator().destroy(device);
+    device.* = try internal.Device.init(self, descriptor orelse &gpu.Device.Descriptor{});
+    return device;
 }
