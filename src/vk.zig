@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const vk = @import("gen/vk.zig");
 
 pub usingnamespace vk;
@@ -9,8 +10,13 @@ pub const BaseDispatch = vk.BaseWrapper(.{
     .enumerateInstanceLayerProperties = true,
 });
 pub const InstanceDispatch = vk.InstanceWrapper(.{
+    .destroyInstance = true,
     .createDevice = true,
     .getDeviceProcAddr = true,
+
+    .createXlibSurfaceKHR = windowing_system == .xlib,
+    .createWin32SurfaceKHR = windowing_system == .win32,
+    .destroySurfaceKHR = true,
 });
 
 pub var bd: BaseDispatch = undefined;
@@ -52,3 +58,16 @@ pub fn hasLayer(name: []const u8) bool {
     }
     return false;
 }
+
+pub const WindowingSystem = enum {
+    win32,
+    xlib,
+    // TODO: wayland
+    // TODO: macos
+};
+// TODO: support multiple windowing systems simultaneously (eg. xlib and wayland)
+pub const windowing_system: WindowingSystem = switch (builtin.target.os.tag) {
+    .windows => .win32,
+    .macos => @compileError("TODO: macos"),
+    else => .xlib,
+};
