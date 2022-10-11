@@ -27,6 +27,8 @@ pub const InstanceDispatch = vk.InstanceWrapper(.{
 });
 pub const DeviceDispatch = vk.DeviceWrapper(.{
     .destroyDevice = true,
+    .getDeviceQueue = true,
+    .queuePresentKHR = true,
 
     .createShaderModule = true,
     .destroyShaderModule = true,
@@ -38,8 +40,16 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
     .createPipelineLayout = true,
     .destroyPipelineLayout = true,
 
-    .getDeviceQueue = true,
     .createSwapchainKHR = true,
+    .destroySwapchainKHR = true,
+    .getSwapchainImagesKHR = true,
+    .acquireNextImageKHR = true,
+
+    .createSemaphore = true,
+    .destroySemaphore = true,
+
+    .createImageView = true,
+    .destroyImageView = true,
 });
 
 pub var bd: BaseDispatch = undefined;

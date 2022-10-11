@@ -9,6 +9,9 @@ const SwapChain = @This();
 
 manager: helper.Manager(SwapChain) = .{},
 swapchain: vk.SwapchainKHR,
+current_image: u32 = undefined,
+images: []vk.Image,
+format: gpu.Texture.Format,
 device: *internal.Device,
 
 pub fn init(device: *internal.Device, surface: *internal.Surface, descriptor: *const gpu.SwapChain.Descriptor) !SwapChain {
@@ -48,9 +51,66 @@ pub fn init(device: *internal.Device, surface: *internal.Surface, descriptor: *c
         .clipped = vk.FALSE, // TODO: check if WebGPU actually requires this
         .old_swapchain = .null_handle,
     }, null);
+    errdefer device.dispatch.destroySwapchainKHR(device.device, swapchain, null);
+
+    // Get swapchain images
+    var image_count: u32 = undefined;
+    _ = try device.dispatch.getSwapchainImagesKHR(device.device, swapchain, &image_count, null);
+    const images = try device.allocator().alloc(vk.Image, image_count);
+    errdefer device.allocator().free(images);
+    _ = try device.dispatch.getSwapchainImagesKHR(device.device, swapchain, &image_count, images.ptr);
 
     return .{
         .swapchain = swapchain,
+        .images = images,
+        .format = descriptor.format,
         .device = device,
     };
+}
+
+pub fn deinit(self: *SwapChain) void {
+    self.device.dispatch.destroySwapchainKHR(self.device.device, self.swapchain, null);
+    self.device.allocator().free(self.images);
+    self.device.allocator().destroy(self);
+}
+
+pub fn getCurrentTextureView(self: *SwapChain) !*internal.TextureView {
+    // TODO: reuse semaphore?
+    const semaphore = try self.device.dispatch.createSemaphore(self.device.device, &.{ .flags = .{} }, null);
+    defer self.device.dispatch.destroySemaphore(self.device.device, semaphore, null);
+
+    const result = try self.device.dispatch.acquireNextImageKHR(
+        self.device.device,
+        self.swapchain,
+        std.math.maxInt(u64),
+        semaphore,
+        .null_handle,
+    );
+    switch (result.result) {
+        .success => {},
+        .timeout => return error.Timeout,
+        else => unreachable,
+    }
+    self.current_image = result.image_index;
+
+    const tex = internal.Texture{
+        .image = self.images[self.current_image],
+        .device = self.device,
+    };
+    return tex.createView(&.{
+        .format = self.format,
+        .dimension = .dimension_2d,
+    });
+}
+
+pub fn present(self: *SwapChain) !void {
+    _ = try self.device.dispatch.queuePresentKHR(self.device.queue.graphics, &.{
+        .wait_semaphore_count = 0,
+        .p_wait_semaphores = undefined,
+        .swapchain_count = 1,
+        .p_swapchains = &[_]vk.SwapchainKHR{self.swapchain},
+        .p_image_indices = &[_]u32{self.current_image},
+        .p_results = null,
+    });
+    self.current_image = undefined;
 }

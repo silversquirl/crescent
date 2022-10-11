@@ -813,11 +813,18 @@ pub inline fn swapChainConfigure(swap_chain: *gpu.SwapChain, format: gpu.Texture
 }
 
 pub inline fn swapChainGetCurrentTextureView(swap_chain: *gpu.SwapChain) *gpu.TextureView {
-    return @ptrCast(*gpu.TextureView, castOpaque(*internal.SwapChain, swap_chain).getCurrentTextureView());
+    return @ptrCast(
+        *gpu.TextureView,
+        castOpaque(*internal.SwapChain, swap_chain).getCurrentTextureView() catch |err| {
+            std.debug.panic("Error creating texture view: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn swapChainPresent(swap_chain: *gpu.SwapChain) void {
-    castOpaque(*internal.SwapChain, swap_chain).present();
+    castOpaque(*internal.SwapChain, swap_chain).present() catch |err| {
+        std.debug.panic("Error presenting swap chain: {s}\n", .{@errorName(err)});
+    };
 }
 
 pub inline fn swapChainReference(swap_chain: *gpu.SwapChain) void {
