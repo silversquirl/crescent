@@ -26,5 +26,5 @@ pub fn init(device: *internal.Device, descriptor: *const gpu.ShaderModule.Descri
 
 pub fn deinit(self: *ShaderModule) void {
     self.device.dispatch.destroyShaderModule(self.device.device, self.shader, null);
-    self.device.adapter.instance.allocator().destroy(self);
+    self.device.allocator().destroy(self);
 }

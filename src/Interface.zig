@@ -4,6 +4,7 @@ const std = @import("std");
 const gpu = @import("gpu");
 const vk = @import("vk.zig");
 const internal = @import("internal.zig");
+const castOpaque = @import("helper.zig").castOpaque;
 
 pub fn init() void {
     vk.init() catch |err| {
@@ -339,7 +340,12 @@ pub inline fn deviceCreateExternalTexture(device: *gpu.Device, external_texture_
 }
 
 pub inline fn deviceCreatePipelineLayout(device: *gpu.Device, pipeline_layout_descriptor: *const gpu.PipelineLayout.Descriptor) *gpu.PipelineLayout {
-    return @ptrCast(*gpu.PipelineLayout, castOpaque(*internal.Device, device).createPipelineLayout(pipeline_layout_descriptor));
+    return @ptrCast(
+        *gpu.PipelineLayout,
+        castOpaque(*internal.Device, device).createPipelineLayout(pipeline_layout_descriptor) catch |err| {
+            std.debug.panic("Error creating pipeline layout: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn deviceCreateQuerySet(device: *gpu.Device, descriptor: *const gpu.QuerySet.Descriptor) *gpu.QuerySet {
@@ -351,7 +357,12 @@ pub inline fn deviceCreateRenderBundleEncoder(device: *gpu.Device, descriptor: *
 }
 
 pub inline fn deviceCreateRenderPipeline(device: *gpu.Device, descriptor: *const gpu.RenderPipeline.Descriptor) *gpu.RenderPipeline {
-    return @ptrCast(*gpu.RenderPipeline, castOpaque(*internal.Device, device).createRenderPipeline(descriptor));
+    return @ptrCast(
+        *gpu.RenderPipeline,
+        castOpaque(*internal.Device, device).createRenderPipeline(descriptor) catch |err| {
+            std.debug.panic("Error creating render pipeline: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn deviceCreateRenderPipelineAsync(device: *gpu.Device, descriptor: *const gpu.RenderPipeline.Descriptor, callback: gpu.CreateRenderPipelineAsyncCallback, userdata: ?*anyopaque) void {
@@ -871,13 +882,4 @@ pub inline fn textureViewReference(texture_view: *gpu.TextureView) void {
 
 pub inline fn textureViewRelease(texture_view: *gpu.TextureView) void {
     castOpaque(*internal.TextureView, texture_view).manager.release();
-}
-
-fn castOpaque(comptime T: type, ptr: anytype) T {
-    comptime {
-        std.debug.assert(std.meta.trait.is(.Opaque)(std.meta.Child(@TypeOf(ptr))));
-    }
-    const alignment = @alignOf(std.meta.Child(T));
-    const aligned = @alignCast(alignment, ptr);
-    return @ptrCast(T, aligned);
 }

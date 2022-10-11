@@ -34,3 +34,12 @@ pub fn findChained(comptime T: type, next_in_chain: ?*const gpu.ChainedStruct) ?
     }
     return null;
 }
+
+pub fn castOpaque(comptime T: type, ptr: anytype) T {
+    comptime {
+        std.debug.assert(std.meta.trait.is(.Opaque)(std.meta.Child(@TypeOf(ptr))));
+    }
+    const alignment = @alignOf(std.meta.Child(T));
+    const aligned = @alignCast(alignment, ptr);
+    return @ptrCast(T, aligned);
+}

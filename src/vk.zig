@@ -28,6 +28,13 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
 
     .createShaderModule = true,
     .destroyShaderModule = true,
+
+    .createRenderPass = true,
+    .destroyRenderPass = true,
+    .createGraphicsPipelines = true,
+    .destroyPipeline = true,
+    .createPipelineLayout = true,
+    .destroyPipelineLayout = true,
 });
 
 pub var bd: BaseDispatch = undefined;

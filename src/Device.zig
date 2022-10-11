@@ -67,6 +67,10 @@ pub fn deinit(self: *Device) void {
     self.adapter.instance.allocator().destroy(self);
 }
 
+pub inline fn allocator(self: *Device) std.mem.Allocator {
+    return self.adapter.instance.allocator();
+}
+
 pub fn setUncapturedErrorCallback(self: *Device, callback: ?gpu.ErrorCallback, userdata: ?*anyopaque) void {
     _ = self;
     _ = callback;
@@ -75,9 +79,22 @@ pub fn setUncapturedErrorCallback(self: *Device, callback: ?gpu.ErrorCallback, u
 }
 
 pub fn createShaderModule(self: *Device, descriptor: *const gpu.ShaderModule.Descriptor) !*internal.ShaderModule {
-    const allocator = self.adapter.instance.allocator();
-    const shader = try allocator.create(internal.ShaderModule);
-    errdefer allocator.destroy(shader);
+    const shader = try self.allocator().create(internal.ShaderModule);
+    errdefer self.allocator().destroy(shader);
     shader.* = try internal.ShaderModule.init(self, descriptor);
     return shader;
+}
+
+pub fn createRenderPipeline(self: *Device, descriptor: *const gpu.RenderPipeline.Descriptor) !*internal.RenderPipeline {
+    const pipeline = try self.allocator().create(internal.RenderPipeline);
+    errdefer self.allocator().destroy(pipeline);
+    pipeline.* = try internal.RenderPipeline.init(self, descriptor);
+    return pipeline;
+}
+
+pub fn createPipelineLayout(self: *Device, descriptor: *const gpu.PipelineLayout.Descriptor) !*internal.PipelineLayout {
+    const layout = try self.allocator().create(internal.PipelineLayout);
+    errdefer self.allocator().destroy(layout);
+    layout.* = try internal.PipelineLayout.init(self, descriptor);
+    return layout;
 }
