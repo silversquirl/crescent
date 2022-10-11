@@ -111,8 +111,7 @@ fn rateDevice(power: gpu.PowerPreference, props: vk.PhysicalDeviceProperties) De
             .low_power => .bad,
             .high_performance => .good,
         },
-        .virtual_gpu, .cpu, .other => .fallback,
-        else => unreachable,
+        else => .fallback,
     };
 }
 
@@ -128,4 +127,22 @@ const DeviceRating = enum {
 
 pub fn deinit(self: *Adapter) void {
     self.instance.allocator().destroy(self);
+}
+
+pub inline fn getProperties(self: *Adapter, properties: *gpu.Adapter.Properties) void {
+    properties.* = .{
+        .vendor_id = self.info.props.vendor_id,
+        .vendor_name = "",
+        .architecture = "",
+        .device_id = self.info.props.device_id,
+        .name = @ptrCast([*:0]const u8, &self.info.props.device_name),
+        .driver_description = "",
+        .adapter_type = switch (self.info.props.device_type) {
+            .discrete_gpu => .discrete_gpu,
+            .integrated_gpu => .integrated_gpu,
+            .cpu => .cpu,
+            else => .unknown,
+        },
+        .backend_type = .vulkan,
+    };
 }
