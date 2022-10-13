@@ -312,7 +312,12 @@ pub inline fn deviceCreateBuffer(device: *gpu.Device, descriptor: *const gpu.Buf
 }
 
 pub inline fn deviceCreateCommandEncoder(device: *gpu.Device, descriptor: ?*const gpu.CommandEncoder.Descriptor) *gpu.CommandEncoder {
-    return @ptrCast(*gpu.CommandEncoder, castOpaque(*internal.Device, device).createCommandEncoder(descriptor));
+    return @ptrCast(
+        *gpu.CommandEncoder,
+        castOpaque(*internal.Device, device).createCommandEncoder(descriptor) catch |err| {
+            std.debug.panic("Error creating command encoder: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn deviceCreateComputePipeline(device: *gpu.Device, descriptor: *const gpu.ComputePipeline.Descriptor) *gpu.ComputePipeline {

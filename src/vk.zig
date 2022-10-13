@@ -50,6 +50,11 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
 
     .createImageView = true,
     .destroyImageView = true,
+
+    .createCommandPool = true,
+    .destroyCommandPool = true,
+    .allocateCommandBuffers = true,
+    .freeCommandBuffers = true,
 });
 
 pub var bd: BaseDispatch = undefined;

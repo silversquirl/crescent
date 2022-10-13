@@ -8,9 +8,13 @@ const vk = @import("vk.zig");
 const Device = @This();
 
 manager: helper.Manager(Device) = .{},
+
 dispatch: vk.DeviceDispatch,
 device: vk.Device,
+
 queue: internal.Queue,
+pool: vk.CommandPool,
+
 adapter: *internal.Adapter,
 
 pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor) !Device {
@@ -50,27 +54,38 @@ pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor
         .pp_enabled_extension_names = exts.ptr,
         .p_enabled_features = null, // TODO
     }, null);
-    // If the DeviceDispatch fails to load, we can't destroy the device
-    errdefer std.log.warn("leaked vulkan device due to error", .{});
-    const dispatch = try vk.DeviceDispatch.load(
+    const dispatch = vk.DeviceDispatch.load(
         device,
         adapter.instance.dispatch.dispatch.vkGetDeviceProcAddr,
-    );
+    ) catch |err| {
+        // If the DeviceDispatch fails to load, we can't destroy the device
+        std.log.warn("leaked vulkan device due to error", .{});
+        return err;
+    };
+    errdefer dispatch.destroyDevice(device, null);
+
+    const pool = try dispatch.createCommandPool(device, &.{
+        .flags = .{},
+        .queue_family_index = adapter.info.graphics_family,
+    }, null);
+    errdefer dispatch.destroyCommandPool(device, pool, null);
 
     return .{
         .dispatch = dispatch,
         .device = device,
         .queue = internal.Queue.init(dispatch, device, adapter.info),
+        .pool = pool,
         .adapter = adapter,
     };
 }
 
 pub fn deinit(self: *Device) void {
+    self.dispatch.destroyCommandPool(self.device, self.pool, null);
     self.dispatch.destroyDevice(self.device, null);
     self.adapter.instance.allocator().destroy(self);
 }
 
-pub inline fn allocator(self: *Device) std.mem.Allocator {
+pub inline fn allocator(self: Device) std.mem.Allocator {
     return self.adapter.instance.allocator();
 }
 
@@ -111,4 +126,11 @@ pub fn createSwapChain(self: *Device, surface: ?*internal.Surface, descriptor: *
     errdefer self.allocator().destroy(swapchain);
     swapchain.* = try internal.SwapChain.init(self, surface.?, descriptor);
     return swapchain;
+}
+
+pub fn createCommandEncoder(self: *const Device, descriptor: ?*const gpu.CommandEncoder.Descriptor) !*internal.CommandEncoder {
+    const encoder = try self.allocator().create(internal.CommandEncoder);
+    errdefer self.allocator().destroy(encoder);
+    encoder.* = try internal.CommandEncoder.init(self, descriptor);
+    return encoder;
 }
