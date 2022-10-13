@@ -60,15 +60,15 @@ pub inline fn adapterRelease(adapter: *gpu.Adapter) void {
     castOpaque(*internal.Adapter, adapter).manager.release();
 }
 
-pub inline fn bindGroupSetLabel(bind_group: *gpu.internal.BindGroup, label: [*:0]const u8) void {
+pub inline fn bindGroupSetLabel(bind_group: *gpu.BindGroup, label: [*:0]const u8) void {
     castOpaque(*internal.BindGroup, bind_group).setLabel(label);
 }
 
-pub inline fn bindGroupReference(bind_group: *gpu.internal.BindGroup) void {
+pub inline fn bindGroupReference(bind_group: *gpu.BindGroup) void {
     castOpaque(*internal.BindGroup, bind_group).manager.reference();
 }
 
-pub inline fn bindGroupRelease(bind_group: *gpu.internal.BindGroup) void {
+pub inline fn bindGroupRelease(bind_group: *gpu.BindGroup) void {
     castOpaque(*internal.BindGroup, bind_group).manager.release();
 }
 
@@ -142,8 +142,8 @@ pub inline fn commandEncoderBeginComputePass(command_encoder: *gpu.CommandEncode
     return @ptrCast(*gpu.ComputePassEncoder, castOpaque(*internal.CommandEncoder, command_encoder).beginComputePass(descriptor));
 }
 
-pub inline fn commandEncoderBeginRenderPass(command_encoder: *gpu.CommandEncoder, descriptor: *const gpu.RenderPassDescriptor) *gpu.internal.RenderPassEncoder {
-    return @ptrCast(*gpu.internal.RenderPassEncoder, castOpaque(*internal.CommandEncoder, command_encoder).beginRenderPass(descriptor));
+pub inline fn commandEncoderBeginRenderPass(command_encoder: *gpu.CommandEncoder, descriptor: *const gpu.RenderPassDescriptor) *gpu.RenderPassEncoder {
+    return @ptrCast(*gpu.RenderPassEncoder, castOpaque(*internal.CommandEncoder, command_encoder).beginRenderPass(descriptor));
 }
 
 pub inline fn commandEncoderClearBuffer(command_encoder: *gpu.CommandEncoder, buffer: *gpu.Buffer, offset: u64, size: u64) void {
@@ -254,7 +254,7 @@ pub inline fn computePassEncoderPushDebugGroup(compute_pass_encoder: *gpu.Comput
     castOpaque(*internal.ComputePassEncoder, compute_pass_encoder).pushDebugGroup(group_label);
 }
 
-pub inline fn computePassEncoderSetBindGroup(compute_pass_encoder: *gpu.ComputePassEncoder, group_index: u32, group: *gpu.internal.BindGroup, dynamic_offset_count: u32, dynamic_offsets: ?[*]const u32) void {
+pub inline fn computePassEncoderSetBindGroup(compute_pass_encoder: *gpu.ComputePassEncoder, group_index: u32, group: *gpu.BindGroup, dynamic_offset_count: u32, dynamic_offsets: ?[*]const u32) void {
     castOpaque(*internal.ComputePassEncoder, compute_pass_encoder).setBindGroup(
         group_index,
         castOpaque(*internal.BindGroup, group),
@@ -299,8 +299,8 @@ pub inline fn computePipelineRelease(compute_pipeline: *gpu.ComputePipeline) voi
     castOpaque(*internal.ComputePipeline, compute_pipeline).manager.release();
 }
 
-pub inline fn deviceCreateBindGroup(device: *gpu.Device, descriptor: *const gpu.internal.BindGroup.Descriptor) *gpu.internal.BindGroup {
-    return @ptrCast(*gpu.internal.BindGroup, castOpaque(*internal.Device, device).createBindGroup(descriptor));
+pub inline fn deviceCreateBindGroup(device: *gpu.Device, descriptor: *const gpu.BindGroup.Descriptor) *gpu.BindGroup {
+    return @ptrCast(*gpu.BindGroup, castOpaque(*internal.Device, device).createBindGroup(descriptor));
 }
 
 pub inline fn deviceCreateBindGroupLayout(device: *gpu.Device, descriptor: *const gpu.BindGroupLayout.Descriptor) *gpu.BindGroupLayout {
@@ -620,7 +620,7 @@ pub inline fn renderBundleEncoderPushDebugGroup(render_bundle_encoder: *gpu.Rend
     castOpaque(*internal.RenderBundleEncoder, render_bundle_encoder).encoderPushDebugGroup(group_label);
 }
 
-pub inline fn renderBundleEncoderSetBindGroup(render_bundle_encoder: *gpu.RenderBundleEncoder, group_index: u32, group: *gpu.internal.BindGroup, dynamic_offset_count: u32, dynamic_offsets: ?[*]const u32) void {
+pub inline fn renderBundleEncoderSetBindGroup(render_bundle_encoder: *gpu.RenderBundleEncoder, group_index: u32, group: *gpu.BindGroup, dynamic_offset_count: u32, dynamic_offsets: ?[*]const u32) void {
     castOpaque(*internal.RenderBundleEncoder, render_bundle_encoder).encoderSetBindGroup(
         group_index,
         castOpaque(*internal.BindGroup, group),
@@ -653,11 +653,11 @@ pub inline fn renderBundleEncoderRelease(render_bundle_encoder: *gpu.RenderBundl
     castOpaque(*internal.RenderBundleEncoder, render_bundle_encoder).encoderRelease();
 }
 
-pub inline fn renderPassEncoderBeginOcclusionQuery(render_pass_encoder: *gpu.internal.RenderPassEncoder, query_index: u32) void {
+pub inline fn renderPassEncoderBeginOcclusionQuery(render_pass_encoder: *gpu.RenderPassEncoder, query_index: u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).beginOcclusionQuery(query_index);
 }
 
-pub inline fn renderPassEncoderDraw(render_pass_encoder: *gpu.internal.RenderPassEncoder, vertex_count: u32, instance_count: u32, first_vertex: u32, first_instance: u32) void {
+pub inline fn renderPassEncoderDraw(render_pass_encoder: *gpu.RenderPassEncoder, vertex_count: u32, instance_count: u32, first_vertex: u32, first_instance: u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).draw(
         vertex_count,
         instance_count,
@@ -666,7 +666,7 @@ pub inline fn renderPassEncoderDraw(render_pass_encoder: *gpu.internal.RenderPas
     );
 }
 
-pub inline fn renderPassEncoderDrawIndexed(render_pass_encoder: *gpu.internal.RenderPassEncoder, index_count: u32, instance_count: u32, first_index: u32, base_vertex: i32, first_instance: u32) void {
+pub inline fn renderPassEncoderDrawIndexed(render_pass_encoder: *gpu.RenderPassEncoder, index_count: u32, instance_count: u32, first_index: u32, base_vertex: i32, first_instance: u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).drawIndexed(
         index_count,
         instance_count,
@@ -676,39 +676,39 @@ pub inline fn renderPassEncoderDrawIndexed(render_pass_encoder: *gpu.internal.Re
     );
 }
 
-pub inline fn renderPassEncoderDrawIndexedIndirect(render_pass_encoder: *gpu.internal.RenderPassEncoder, indirect_buffer: *gpu.Buffer, indirect_offset: u64) void {
+pub inline fn renderPassEncoderDrawIndexedIndirect(render_pass_encoder: *gpu.RenderPassEncoder, indirect_buffer: *gpu.Buffer, indirect_offset: u64) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).drawIndexedIndirect(castOpaque(*internal.Buffer, indirect_buffer), indirect_offset);
 }
 
-pub inline fn renderPassEncoderDrawIndirect(render_pass_encoder: *gpu.internal.RenderPassEncoder, indirect_buffer: *gpu.Buffer, indirect_offset: u64) void {
+pub inline fn renderPassEncoderDrawIndirect(render_pass_encoder: *gpu.RenderPassEncoder, indirect_buffer: *gpu.Buffer, indirect_offset: u64) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).drawIndirect(castOpaque(*internal.Buffer, indirect_buffer), indirect_offset);
 }
 
-pub inline fn renderPassEncoderEnd(render_pass_encoder: *gpu.internal.RenderPassEncoder) void {
+pub inline fn renderPassEncoderEnd(render_pass_encoder: *gpu.RenderPassEncoder) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).end();
 }
 
-pub inline fn renderPassEncoderEndOcclusionQuery(render_pass_encoder: *gpu.internal.RenderPassEncoder) void {
+pub inline fn renderPassEncoderEndOcclusionQuery(render_pass_encoder: *gpu.RenderPassEncoder) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).endOcclusionQuery();
 }
 
-pub inline fn renderPassEncoderExecuteBundles(render_pass_encoder: *gpu.internal.RenderPassEncoder, bundles_count: u32, bundles: [*]const *const gpu.RenderBundle) void {
+pub inline fn renderPassEncoderExecuteBundles(render_pass_encoder: *gpu.RenderPassEncoder, bundles_count: u32, bundles: [*]const *const gpu.RenderBundle) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).executeBundles(bundles_count, bundles);
 }
 
-pub inline fn renderPassEncoderInsertDebugMarker(render_pass_encoder: *gpu.internal.RenderPassEncoder, marker_label: [*:0]const u8) void {
+pub inline fn renderPassEncoderInsertDebugMarker(render_pass_encoder: *gpu.RenderPassEncoder, marker_label: [*:0]const u8) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).insertDebugMarker(marker_label);
 }
 
-pub inline fn renderPassEncoderPopDebugGroup(render_pass_encoder: *gpu.internal.RenderPassEncoder) void {
+pub inline fn renderPassEncoderPopDebugGroup(render_pass_encoder: *gpu.RenderPassEncoder) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).popDebugGroup();
 }
 
-pub inline fn renderPassEncoderPushDebugGroup(render_pass_encoder: *gpu.internal.RenderPassEncoder, group_label: [*:0]const u8) void {
+pub inline fn renderPassEncoderPushDebugGroup(render_pass_encoder: *gpu.RenderPassEncoder, group_label: [*:0]const u8) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).pushDebugGroup(group_label);
 }
 
-pub inline fn renderPassEncoderSetBindGroup(render_pass_encoder: *gpu.internal.RenderPassEncoder, group_index: u32, group: *gpu.internal.BindGroup, dynamic_offset_count: u32, dynamic_offsets: ?[*]const u32) void {
+pub inline fn renderPassEncoderSetBindGroup(render_pass_encoder: *gpu.RenderPassEncoder, group_index: u32, group: *gpu.BindGroup, dynamic_offset_count: u32, dynamic_offsets: ?[*]const u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setBindGroup(
         group_index,
         castOpaque(*internal.BindGroup, group),
@@ -717,47 +717,47 @@ pub inline fn renderPassEncoderSetBindGroup(render_pass_encoder: *gpu.internal.R
     );
 }
 
-pub inline fn renderPassEncoderSetBlendConstant(render_pass_encoder: *gpu.internal.RenderPassEncoder, color: *const gpu.Color) void {
+pub inline fn renderPassEncoderSetBlendConstant(render_pass_encoder: *gpu.RenderPassEncoder, color: *const gpu.Color) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setBlendConstant(color);
 }
 
-pub inline fn renderPassEncoderSetIndexBuffer(render_pass_encoder: *gpu.internal.RenderPassEncoder, buffer: *gpu.Buffer, format: gpu.IndexFormat, offset: u64, size: u64) void {
+pub inline fn renderPassEncoderSetIndexBuffer(render_pass_encoder: *gpu.RenderPassEncoder, buffer: *gpu.Buffer, format: gpu.IndexFormat, offset: u64, size: u64) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setIndexBuffer(castOpaque(*internal.Buffer, buffer), format, offset, size);
 }
 
-pub inline fn renderPassEncoderSetLabel(render_pass_encoder: *gpu.internal.RenderPassEncoder, label: [*:0]const u8) void {
+pub inline fn renderPassEncoderSetLabel(render_pass_encoder: *gpu.RenderPassEncoder, label: [*:0]const u8) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setLabel(label);
 }
 
-pub inline fn renderPassEncoderSetPipeline(render_pass_encoder: *gpu.internal.RenderPassEncoder, pipeline: *gpu.RenderPipeline) void {
+pub inline fn renderPassEncoderSetPipeline(render_pass_encoder: *gpu.RenderPassEncoder, pipeline: *gpu.RenderPipeline) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setPipeline(castOpaque(*internal.RenderPipeline, pipeline));
 }
 
-pub inline fn renderPassEncoderSetScissorRect(render_pass_encoder: *gpu.internal.RenderPassEncoder, x: u32, y: u32, width: u32, height: u32) void {
+pub inline fn renderPassEncoderSetScissorRect(render_pass_encoder: *gpu.RenderPassEncoder, x: u32, y: u32, width: u32, height: u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setScissorRect(x, y, width, height);
 }
 
-pub inline fn renderPassEncoderSetStencilReference(render_pass_encoder: *gpu.internal.RenderPassEncoder, reference: u32) void {
+pub inline fn renderPassEncoderSetStencilReference(render_pass_encoder: *gpu.RenderPassEncoder, reference: u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setStencilReference(reference);
 }
 
-pub inline fn renderPassEncoderSetVertexBuffer(render_pass_encoder: *gpu.internal.RenderPassEncoder, slot: u32, buffer: *gpu.Buffer, offset: u64, size: u64) void {
+pub inline fn renderPassEncoderSetVertexBuffer(render_pass_encoder: *gpu.RenderPassEncoder, slot: u32, buffer: *gpu.Buffer, offset: u64, size: u64) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setVertexBuffer(slot, castOpaque(*internal.Buffer, buffer), offset, size);
 }
 
-pub inline fn renderPassEncoderSetViewport(render_pass_encoder: *gpu.internal.RenderPassEncoder, x: f32, y: f32, width: f32, height: f32, min_depth: f32, max_depth: f32) void {
+pub inline fn renderPassEncoderSetViewport(render_pass_encoder: *gpu.RenderPassEncoder, x: f32, y: f32, width: f32, height: f32, min_depth: f32, max_depth: f32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setViewport(x, y, width, height, min_depth, max_depth);
 }
 
-pub inline fn renderPassEncoderWriteTimestamp(render_pass_encoder: *gpu.internal.RenderPassEncoder, query_set: *gpu.QuerySet, query_index: u32) void {
+pub inline fn renderPassEncoderWriteTimestamp(render_pass_encoder: *gpu.RenderPassEncoder, query_set: *gpu.QuerySet, query_index: u32) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).writeTimestamp(castOpaque(*internal.QuerySet, query_set), query_index);
 }
 
-pub inline fn renderPassEncoderReference(render_pass_encoder: *gpu.internal.RenderPassEncoder) void {
+pub inline fn renderPassEncoderReference(render_pass_encoder: *gpu.RenderPassEncoder) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).manager.reference();
 }
 
-pub inline fn renderPassEncoderRelease(render_pass_encoder: *gpu.internal.RenderPassEncoder) void {
+pub inline fn renderPassEncoderRelease(render_pass_encoder: *gpu.RenderPassEncoder) void {
     castOpaque(*internal.RenderPassEncoder, render_pass_encoder).manager.release();
 }
 
