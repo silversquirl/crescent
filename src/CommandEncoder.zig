@@ -8,31 +8,33 @@ const vk = @import("vk.zig");
 const CommandEncoder = @This();
 
 manager: helper.Manager(CommandEncoder) = .{},
-buffer: vk.CommandBuffer,
-device: *const internal.Device,
+buffer: *internal.CommandBuffer,
 
 pub fn init(device: *const internal.Device, descriptor: ?*const gpu.CommandEncoder.Descriptor) !CommandEncoder {
     _ = descriptor;
-
-    var buffer: vk.CommandBuffer = undefined;
-    try device.dispatch.allocateCommandBuffers(device.device, &.{
-        .command_pool = device.pool,
-        .level = .primary,
-        .command_buffer_count = 1,
-    }, @as(*[1]vk.CommandBuffer, &buffer));
-
-    return .{
-        .buffer = buffer,
-        .device = device,
-    };
+    const buffer = try device.allocator().create(internal.CommandBuffer);
+    errdefer device.allocator().destroy(buffer);
+    buffer.* = try internal.CommandBuffer.init(device);
+    return .{ .buffer = buffer };
 }
 
 pub fn deinit(self: *CommandEncoder) void {
-    self.device.dispatch.freeCommandBuffers(
-        self.device.device,
-        self.device.pool,
-        1,
-        @as(*[1]vk.CommandBuffer, &self.buffer),
-    );
-    self.device.allocator().destroy(self);
+    const buffer = self.buffer;
+    buffer.device.allocator().destroy(self);
+    buffer.manager.release();
+}
+
+pub fn beginRenderPass(self: *CommandEncoder, descriptor: ?*const gpu.RenderPassDescriptor) !*internal.RenderPassEncoder {
+    const allocator = self.buffer.device.allocator();
+    const encoder = try allocator.create(internal.RenderPassEncoder);
+    errdefer allocator.destroy(encoder);
+    encoder.* = try internal.RenderPassEncoder.init(self, descriptor.?);
+    return encoder;
+}
+
+pub fn finish(self: *CommandEncoder, descriptor: ?*const gpu.CommandBuffer.Descriptor) !*internal.CommandBuffer {
+    _ = descriptor;
+    try self.buffer.device.dispatch.endCommandBuffer(self.buffer.buffer);
+    self.buffer.manager.reference();
+    return self.buffer;
 }

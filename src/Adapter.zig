@@ -102,12 +102,12 @@ pub fn init(instance: *internal.Instance, options: *const gpu.RequestAdapterOpti
 fn rateDevice(power: gpu.PowerPreference, props: vk.PhysicalDeviceProperties) DeviceRating {
     return switch (props.device_type) {
         .integrated_gpu => switch (power) {
-            .undef => .good,
+            .undefined => .good,
             .low_power => .good,
             .high_performance => .bad,
         },
         .discrete_gpu => switch (power) {
-            .undef => .good,
+            .undefined => .good,
             .low_power => .bad,
             .high_performance => .good,
         },

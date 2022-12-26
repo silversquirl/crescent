@@ -9,9 +9,10 @@ const TextureView = @This();
 
 manager: helper.Manager(TextureView) = .{},
 view: vk.ImageView,
-device: *internal.Device,
+format: vk.Format,
+texture: *internal.Texture,
 
-pub fn init(texture: internal.Texture, descriptor: *const gpu.TextureView.Descriptor) !TextureView {
+pub fn init(texture: *internal.Texture, descriptor: *const gpu.TextureView.Descriptor) !TextureView {
     const aspect: vk.ImageAspectFlags = if (descriptor.aspect != .all) .{
         .stencil_bit = descriptor.aspect == .stencil_only,
         .depth_bit = descriptor.aspect == .depth_only,
@@ -30,6 +31,7 @@ pub fn init(texture: internal.Texture, descriptor: *const gpu.TextureView.Descri
         },
         else => .{ .color_bit = true },
     };
+    const format = helper.vulkanTextureFormat(descriptor.format);
 
     const view = try texture.device.dispatch.createImageView(texture.device.device, &.{
         .flags = .{},
@@ -43,7 +45,7 @@ pub fn init(texture: internal.Texture, descriptor: *const gpu.TextureView.Descri
             .dimension_cube_array => .cube_array,
             .dimension_3d => .@"3d",
         },
-        .format = helper.vulkanTextureFormat(descriptor.format),
+        .format = format,
         .components = .{
             .r = .identity,
             .g = .identity,
@@ -58,13 +60,17 @@ pub fn init(texture: internal.Texture, descriptor: *const gpu.TextureView.Descri
             .layer_count = descriptor.array_layer_count,
         },
     }, null);
+
+    texture.manager.reference();
     return .{
         .view = view,
-        .device = texture.device,
+        .format = format,
+        .texture = texture,
     };
 }
 
 pub fn deinit(self: *TextureView) void {
-    self.device.dispatch.destroyImageView(self.device.device, self.view, null);
-    self.device.allocator().destroy(self);
+    self.texture.device.dispatch.destroyImageView(self.texture.device.device, self.view, null);
+    self.texture.manager.release();
+    self.texture.device.allocator().destroy(self);
 }

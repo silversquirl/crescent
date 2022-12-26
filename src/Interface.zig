@@ -143,7 +143,12 @@ pub inline fn commandEncoderBeginComputePass(command_encoder: *gpu.CommandEncode
 }
 
 pub inline fn commandEncoderBeginRenderPass(command_encoder: *gpu.CommandEncoder, descriptor: *const gpu.RenderPassDescriptor) *gpu.RenderPassEncoder {
-    return @ptrCast(*gpu.RenderPassEncoder, castOpaque(*internal.CommandEncoder, command_encoder).beginRenderPass(descriptor));
+    return @ptrCast(
+        *gpu.RenderPassEncoder,
+        castOpaque(*internal.CommandEncoder, command_encoder).beginRenderPass(descriptor) catch |err| {
+            std.debug.panic("Error creating render pass encoder: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn commandEncoderClearBuffer(command_encoder: *gpu.CommandEncoder, buffer: *gpu.Buffer, offset: u64, size: u64) void {
@@ -177,7 +182,12 @@ pub inline fn commandEncoderCopyTextureToTextureInternal(command_encoder: *gpu.C
 }
 
 pub inline fn commandEncoderFinish(command_encoder: *gpu.CommandEncoder, descriptor: ?*const gpu.CommandBuffer.Descriptor) *gpu.CommandBuffer {
-    return @ptrCast(*gpu.CommandBuffer, castOpaque(*internal.CommandEncoder, command_encoder).finish(descriptor));
+    return @ptrCast(
+        *gpu.CommandBuffer,
+        castOpaque(*internal.CommandEncoder, command_encoder).finish(descriptor) catch |err| {
+            std.debug.panic("Error encoding commands: {s}\n", .{@errorName(err)});
+        },
+    );
 }
 
 pub inline fn commandEncoderInjectValidationError(command_encoder: *gpu.CommandEncoder, message: [*:0]const u8) void {
@@ -555,7 +565,11 @@ pub inline fn queueSetLabel(queue: *gpu.Queue, label: [*:0]const u8) void {
 }
 
 pub inline fn queueSubmit(queue: *gpu.Queue, command_count: u32, commands: [*]*const gpu.CommandBuffer) void {
-    castOpaque(*internal.Queue, queue).submit(command_count, commands);
+    castOpaque(*internal.Queue, queue).submit(
+        @ptrCast([]const *const internal.CommandBuffer, commands[0..command_count]),
+    ) catch |err| {
+        std.debug.panic("Error in queue submission: {s}\n", .{@errorName(err)});
+    };
 }
 
 pub inline fn queueWriteBuffer(queue: *gpu.Queue, buffer: *gpu.Buffer, buffer_offset: u64, data: *const anyopaque, size: usize) void {
@@ -730,7 +744,9 @@ pub inline fn renderPassEncoderSetLabel(render_pass_encoder: *gpu.RenderPassEnco
 }
 
 pub inline fn renderPassEncoderSetPipeline(render_pass_encoder: *gpu.RenderPassEncoder, pipeline: *gpu.RenderPipeline) void {
-    castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setPipeline(castOpaque(*internal.RenderPipeline, pipeline));
+    castOpaque(*internal.RenderPassEncoder, render_pass_encoder).setPipeline(castOpaque(*internal.RenderPipeline, pipeline)) catch |err| {
+        std.debug.panic("Error in deferred render pass init: {s}\n", .{@errorName(err)});
+    };
 }
 
 pub inline fn renderPassEncoderSetScissorRect(render_pass_encoder: *gpu.RenderPassEncoder, x: u32, y: u32, width: u32, height: u32) void {

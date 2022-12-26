@@ -29,6 +29,12 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
     .destroyDevice = true,
     .getDeviceQueue = true,
     .queuePresentKHR = true,
+    .queueSubmit = true,
+
+    .createFence = true,
+    .destroyFence = true,
+    .resetFences = true,
+    .waitForFences = true,
 
     .createShaderModule = true,
     .destroyShaderModule = true,
@@ -40,6 +46,9 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
     .createPipelineLayout = true,
     .destroyPipelineLayout = true,
 
+    .createFramebuffer = true,
+    .destroyFramebuffer = true,
+
     .createSwapchainKHR = true,
     .destroySwapchainKHR = true,
     .getSwapchainImagesKHR = true,
@@ -48,6 +57,8 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
     .createSemaphore = true,
     .destroySemaphore = true,
 
+    .destroyImage = true,
+
     .createImageView = true,
     .destroyImageView = true,
 
@@ -55,6 +66,16 @@ pub const DeviceDispatch = vk.DeviceWrapper(.{
     .destroyCommandPool = true,
     .allocateCommandBuffers = true,
     .freeCommandBuffers = true,
+
+    .beginCommandBuffer = true,
+    .endCommandBuffer = true,
+
+    .cmdBeginRenderPass = true,
+    .cmdBindPipeline = true,
+    .cmdDraw = true,
+    .cmdEndRenderPass = true,
+    .cmdSetScissor = true,
+    .cmdSetViewport = true,
 });
 
 pub var bd: BaseDispatch = undefined;

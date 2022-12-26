@@ -57,7 +57,7 @@ pub fn castOpaque(comptime T: type, ptr: anytype) T {
 
 pub fn vulkanTextureFormat(fmt: gpu.Texture.Format) vk.Format {
     return switch (fmt) {
-        .undef => .undefined,
+        .undefined => .undefined,
         .r8_unorm => .r8_unorm,
         .r8_snorm => .r8_snorm,
         .r8_uint => .r8_uint,
@@ -158,7 +158,7 @@ pub fn vulkanTextureFormat(fmt: gpu.Texture.Format) vk.Format {
 
 pub fn vulkanVertexFormat(format: gpu.VertexFormat) vk.Format {
     return switch (format) {
-        .undef => .undefined,
+        .undefined => .undefined,
 
         .uint8x2 => .r8g8_uint,
         .uint8x4 => .r8g8b8a8_uint,
@@ -199,7 +199,7 @@ pub fn vulkanVertexFormat(format: gpu.VertexFormat) vk.Format {
 
 pub fn vulkanCompareOp(op: gpu.CompareFunction) vk.CompareOp {
     return switch (op) {
-        .undef => unreachable,
+        .undefined => unreachable,
         .never => vk.CompareOp.never,
         .less => .less,
         .less_equal => .less_or_equal,
@@ -248,5 +248,18 @@ pub fn vulkanBlendOp(op: gpu.BlendOperation) vk.BlendOp {
         .reverse_subtract => .reverse_subtract,
         .min => .min,
         .max => .max,
+    };
+}
+
+pub fn vulkanSampleCountFlags(samples: u32) vk.SampleCountFlags {
+    // TODO: Snektron/vulkan-zig#27
+    return switch (samples) {
+        1 => .{ .@"1_bit" = true },
+        2 => .{ .@"2_bit" = true },
+        4 => .{ .@"4_bit" = true },
+        8 => .{ .@"8_bit" = true },
+        16 => .{ .@"16_bit" = true },
+        32 => .{ .@"32_bit" = true },
+        else => unreachable,
     };
 }

@@ -15,16 +15,7 @@ device: *internal.Device,
 pub fn init(device: *internal.Device, descriptor: *const gpu.RenderPipeline.Descriptor) !RenderPipeline {
     const allocator = device.allocator();
 
-    // TODO: Snektron/vulkan-zig#27
-    const multisample_count_vk: vk.SampleCountFlags = switch (descriptor.multisample.count) {
-        1 => .{ .@"1_bit" = true },
-        2 => .{ .@"2_bit" = true },
-        4 => .{ .@"4_bit" = true },
-        8 => .{ .@"8_bit" = true },
-        16 => .{ .@"16_bit" = true },
-        32 => .{ .@"32_bit" = true },
-        else => unreachable,
-    };
+    const multisample_count_vk = helper.vulkanSampleCountFlags(descriptor.multisample.count);
 
     // Create render pass
     // TODO: may be best to defer vulkan render pass (and hence pipeline) creation until it's
@@ -45,12 +36,12 @@ pub fn init(device: *internal.Device, descriptor: *const gpu.RenderPipeline.Desc
                 .flags = .{ .may_alias_bit = true }, // TODO: do we actually need this? Check spec
                 .format = helper.vulkanTextureFormat(frag.targets.?[i].format),
                 .samples = multisample_count_vk,
-                .load_op = .load,
-                .store_op = .store,
+                .load_op = .clear, // TODO
+                .store_op = .store, // TODO
                 .stencil_load_op = .dont_care,
                 .stencil_store_op = .dont_care,
-                .initial_layout = .general,
-                .final_layout = .general,
+                .initial_layout = .undefined, // TODO
+                .final_layout = .present_src_khr, // TODO
             };
         }
 

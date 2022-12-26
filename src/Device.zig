@@ -18,7 +18,7 @@ pool: vk.CommandPool,
 adapter: *internal.Adapter,
 
 pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor) !Device {
-    const queue_infos: []vk.DeviceQueueCreateInfo = if (adapter.info.graphics_family == adapter.info.compute_family)
+    const queue_infos: []const vk.DeviceQueueCreateInfo = if (adapter.info.graphics_family == adapter.info.compute_family)
         &.{.{
             .flags = .{},
             .queue_family_index = adapter.info.graphics_family,
@@ -73,7 +73,7 @@ pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor
     return .{
         .dispatch = dispatch,
         .device = device,
-        .queue = internal.Queue.init(dispatch, device, adapter.info),
+        .queue = try internal.Queue.init(dispatch, device, adapter.info),
         .pool = pool,
         .adapter = adapter,
     };
