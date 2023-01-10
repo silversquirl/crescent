@@ -23,7 +23,7 @@ pub fn create(descriptor: ?*const gpu.Instance.Descriptor) !*Instance {
         &.{};
 
     const system_ext = switch (vk.windowing_system) {
-        .win32 => vk.extension_info.khr_win32_surface.name,
+        .win32 => vk.extension_info.khr_win_32_surface.name,
         .xlib => vk.extension_info.khr_xlib_surface.name,
     };
     var exts: []const [*:0]const u8 = &.{

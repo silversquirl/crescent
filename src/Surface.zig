@@ -13,7 +13,7 @@ instance: *internal.Instance,
 
 pub fn init(instance: *internal.Instance, descriptor: *const gpu.Surface.Descriptor) !Surface {
     const surface = switch (vk.windowing_system) {
-        .win32 => @compileError("TODO"),
+        .win32 => try initWin32(instance, descriptor),
         .xlib => try initXlib(instance, descriptor),
     };
 
@@ -21,6 +21,20 @@ pub fn init(instance: *internal.Instance, descriptor: *const gpu.Surface.Descrip
         .surface = surface,
         .instance = instance,
     };
+}
+
+fn initWin32(instance: *internal.Instance, descriptor: *const gpu.Surface.Descriptor) !vk.SurfaceKHR {
+    const desc = helper.findChained(
+        gpu.Surface.DescriptorFromWindowsHWND,
+        descriptor.next_in_chain.generic,
+    ) orelse {
+        return error.InvalidDescriptor;
+    };
+    return instance.dispatch.createWin32SurfaceKHR(instance.instance, &.{
+        .hinstance = @ptrCast(vk.HINSTANCE, desc.hinstance),
+        .hwnd = @ptrCast(vk.HWND, desc.hwnd),
+        .flags = .{},
+    }, null);
 }
 
 fn initXlib(instance: *internal.Instance, descriptor: *const gpu.Surface.Descriptor) !vk.SurfaceKHR {
