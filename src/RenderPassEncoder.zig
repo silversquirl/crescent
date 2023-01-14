@@ -14,7 +14,7 @@ attachments: []const vk.ImageView,
 extent: vk.Extent2D,
 clear_values: []const vk.ClearValue,
 
-encoder: *internal.CommandEncoder,
+buffer: *internal.CommandBuffer,
 
 pub fn init(encoder: *internal.CommandEncoder, descriptor: *const gpu.RenderPassDescriptor) !RenderPassEncoder {
     const allocator = encoder.buffer.device.allocator();
@@ -106,30 +106,28 @@ pub fn init(encoder: *internal.CommandEncoder, descriptor: *const gpu.RenderPass
     // TODO: occlusion queries
     // TODO: timestamp writes
 
-    encoder.manager.reference();
+    // TODO: catch release of encoder before pass is finished (weak ref of some kind?)
 
     return .{
         .attachments = attachments,
         .extent = extent.?,
         .clear_values = clear_values,
-        .encoder = encoder,
+        .buffer = encoder.buffer,
     };
 }
 
 pub fn deinit(self: *RenderPassEncoder) void {
-    const device = self.encoder.buffer.device;
+    const device = self.buffer.device;
     device.dispatch.destroyFramebuffer(device.device, self.fb, null); // TODO: cache framebuffers
 
     const allocator = device.allocator();
     allocator.free(self.attachments);
     allocator.free(self.clear_values);
     allocator.destroy(self);
-
-    self.encoder.manager.release();
 }
 
 pub fn setPipeline(self: *RenderPassEncoder, pipeline: *internal.RenderPipeline) !void {
-    const device = self.encoder.buffer.device;
+    const device = self.buffer.device;
 
     self.fb = try device.dispatch.createFramebuffer(device.device, &.{
         .flags = .{},
@@ -142,7 +140,7 @@ pub fn setPipeline(self: *RenderPassEncoder, pipeline: *internal.RenderPipeline)
     }, null);
     errdefer device.dispatch.destroyFramebuffer(device.device, self.fb, null);
 
-    const buf = self.encoder.buffer.buffer;
+    const buf = self.buffer.buffer;
     const rect = vk.Rect2D{
         .offset = .{ .x = 0, .y = 0 },
         .extent = self.extent,
@@ -155,8 +153,8 @@ pub fn setPipeline(self: *RenderPassEncoder, pipeline: *internal.RenderPipeline)
         .p_clear_values = self.clear_values.ptr,
     }, .@"inline");
 
-    try self.encoder.buffer.render_passes.append(device.allocator(), self);
-    self.manager.reference();
+    try self.buffer.render_passes.append(device.allocator(), self);
+    self.manager.reference(); // Command buffer now references this pass
 
     device.dispatch.cmdBindPipeline(buf, .graphics, pipeline.pipeline);
 
@@ -175,11 +173,11 @@ pub fn setPipeline(self: *RenderPassEncoder, pipeline: *internal.RenderPipeline)
 }
 
 pub fn draw(self: *RenderPassEncoder, vertex_count: u32, instance_count: u32, first_vertex: u32, first_instance: u32) void {
-    const buf = self.encoder.buffer;
+    const buf = self.buffer;
     buf.device.dispatch.cmdDraw(buf.buffer, vertex_count, instance_count, first_vertex, first_instance);
 }
 
 pub fn end(self: *RenderPassEncoder) void {
-    const buf = self.encoder.buffer;
+    const buf = self.buffer;
     buf.device.dispatch.cmdEndRenderPass(buf.buffer);
 }

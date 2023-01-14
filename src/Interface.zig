@@ -566,7 +566,7 @@ pub inline fn queueSetLabel(queue: *gpu.Queue, label: [*:0]const u8) void {
 
 pub inline fn queueSubmit(queue: *gpu.Queue, command_count: u32, commands: [*]*const gpu.CommandBuffer) void {
     castOpaque(*internal.Queue, queue).submit(
-        @ptrCast([]const *const internal.CommandBuffer, commands[0..command_count]),
+        @ptrCast([]const *internal.CommandBuffer, commands[0..command_count]),
     ) catch |err| {
         std.debug.panic("Error in queue submission: {s}\n", .{@errorName(err)});
     };

@@ -119,7 +119,7 @@ pub fn getCurrentTextureView(self: *SwapChain) !*internal.TextureView {
 }
 
 pub fn present(self: *SwapChain) !void {
-    while (!try self.device.queue.waitTimeout(std.math.maxInt(u64))) {}
+    try self.device.queue.waitUncapped();
 
     _ = try self.device.dispatch.queuePresentKHR(self.device.queue.graphics, &.{
         .wait_semaphore_count = 0,

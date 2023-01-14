@@ -80,6 +80,7 @@ pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor
 }
 
 pub fn deinit(self: *Device) void {
+    self.queue.deinit();
     self.dispatch.destroyCommandPool(self.device, self.pool, null);
     self.dispatch.destroyDevice(self.device, null);
     self.allocator().destroy(self);
