@@ -32,9 +32,10 @@ pub fn init(device: *internal.Device, descriptor: *const gpu.RenderPipeline.Desc
     if (descriptor.fragment) |frag| {
         attachments = try allocator.alloc(vk.AttachmentDescription, frag.target_count);
         for (attachments) |*a, i| {
+            const target = frag.targets.?[i];
             a.* = .{
                 .flags = .{ .may_alias_bit = true }, // TODO: do we actually need this? Check spec
-                .format = helper.vulkanTextureFormat(frag.targets.?[i].format),
+                .format = helper.vulkanTextureFormat(target.format),
                 .samples = multisample_count_vk,
                 .load_op = .clear, // TODO
                 .store_op = .store, // TODO

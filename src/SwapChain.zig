@@ -105,7 +105,9 @@ pub fn getCurrentTextureView(self: *SwapChain) !*internal.TextureView {
     );
     switch (result.result) {
         .success => {},
-        .timeout => return error.Timeout,
+        .suboptimal_khr => {},
+        .not_ready => return error.NotReady,
+        .timeout => unreachable, // infinite timeout
         else => unreachable,
     }
     self.current_tex = result.image_index;

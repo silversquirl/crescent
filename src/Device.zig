@@ -82,7 +82,7 @@ pub fn init(adapter: *internal.Adapter, descriptor: *const gpu.Device.Descriptor
 pub fn deinit(self: *Device) void {
     self.dispatch.destroyCommandPool(self.device, self.pool, null);
     self.dispatch.destroyDevice(self.device, null);
-    self.adapter.instance.allocator().destroy(self);
+    self.allocator().destroy(self);
 }
 
 pub inline fn allocator(self: Device) std.mem.Allocator {
